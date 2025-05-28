@@ -59,18 +59,24 @@ async function extractTextandSummarize(bodyText) {
 
 function showSummary(summaryText) {
     
+    const riskMatch = summaryText.match(/Risk Level:\s*(Low|Moderate|High)/i);
+
+    let riskClass = 'low';
+    let riskText = '';
+    
+    if (riskMatch) {
+        const level = riskMatch[1];
+        riskClass = level.toLowerCase();
+        riskText = `Risk Level: ${level}`;
+        summaryText = summaryText.replace(riskMatch[0], '')
+    }
 
     const formatted = summaryText
-    .replace(/Risk Level:/i, '<strong>Risk Level:</strong>')
     .replace(/Data Collection:/i, '<strong>Data Collection:</strong>')
     .replace(/Data Sharing:/i, '<strong>Data Sharing:</strong>')
     .replace(/Data Storage:/i, '<strong>Data Storage:</strong>');
 
-    let riskClass = 'low';
-    if (summaryText.includes('High')) riskClass = 'high';
-    else if (summaryText.includes('Moderate')) riskClass = 'moderate';
-
     document.getElementById('summary').innerHTML = formatted;
-    document.getElementById('risk').innerHTML = '';
+    document.getElementById('risk').innerHTML = `<span class='risk ${riskClass}'>${riskText}</span>`;
 
 }
