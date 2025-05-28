@@ -24,11 +24,11 @@ async function extractTextandSummarize(bodyText) {
     
     const prompt = `You are a privacy policy summarization expert. Given the following privacy policy,
     extract only the most essential details in the format below:
+    Risk Level: [Low / Moderate / High only - no explanation]
     Data Collection: [list items, comma-separated]
     Data Sharing: [brief summary of sharing destinations, comma-separated if needed]
     Data Storage: [briefly describe how/where data is stored, or if not mentioned]
-    Risk Level: [Low / Moderate / High only - no explanation]
-
+    
     Do not add extra text or explanations.`;
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
@@ -58,11 +58,19 @@ async function extractTextandSummarize(bodyText) {
 }
 
 function showSummary(summaryText) {
-    document.getElementById('summary').innerText = summaryText;
+    
+
+    const formatted = summaryText
+    .replace(/Risk Level:/i, '<strong>Risk Level:</strong>')
+    .replace(/Data Collection:/i, '<strong>Data Collection:</strong>')
+    .replace(/Data Sharing:/i, '<strong>Data Sharing:</strong>')
+    .replace(/Data Storage:/i, '<strong>Data Storage:</strong>');
 
     let riskClass = 'low';
     if (summaryText.includes('High')) riskClass = 'high';
     else if (summaryText.includes('Moderate')) riskClass = 'moderate';
 
+    document.getElementById('summary').innerHTML = formatted;
     document.getElementById('risk').innerHTML = '';
+
 }
