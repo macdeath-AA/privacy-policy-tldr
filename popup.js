@@ -2,26 +2,34 @@ document.getElementById("summarize").addEventListener("click", async () => {
     chrome.tabs.query({active:true, currentWindow:true}, (tabs) => {
         chrome.scripting.executeScript({
             target: {tabId: tabs[0].id },
-            function: extractTextandSummarize
+            func: () => document.body.innerText,
+        }, async (results) => {
+            const bodyText = results[0].result;
+            const summary = await extractTextandSummarize(bodyText);
+            showSummary(summary);
         });
     });
 });
-let apiKey = null;
 
-async function loadAPIKey() {
-    if (apiKey) return apiKey;
 
+async function loadAPIKey() {   
     const res = await fetch(chrome.runtime.getURL('secrets.json'));
     const data = await res.json();
-    apiKey = data.GEMINI_API_KEY;
-    return apiKey
+    return data.GEMINI_API_KEY; 
 }
 
-async function extractTextandSummarize() {
-    const bodyText = document.body.innerText;
+async function extractTextandSummarize(bodyText) {
+    // const bodyText = document.body.innerText;
     const apiKey = await loadAPIKey();
     
-    const prompt = `Summarize the following privacy policy in 3-5 bullet points. Highlight data collection, sharing, and storage. Rate risk as Low, Moderate, or High.\n\n${bodyText}`;
+    const prompt = `You are a privacy policy summarization expert. Given the following privacy policy,
+    extract only the most essential details in the format below:
+    Data Collection: [list items, comma-separated]
+    Data Sharing: [brief summary of sharing destinations, comma-separated if needed]
+    Data Storage: [briefly describe how/where data is stored, or if not mentioned]
+    Risk Level: [Low / Moderate / High only - no explanation]
+
+    Do not add extra text or explanations.`;
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
 
@@ -29,7 +37,7 @@ async function extractTextandSummarize() {
         contents: [
             {
                 parts: [
-                    {text: prompt}
+                    {text: prompt + `Policy: ${bodyText}`}
                 ]
             }
         ]
@@ -38,32 +46,23 @@ async function extractTextandSummarize() {
     const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-            'Content-Type': 'appplication/json'
+            'Content-Type': 'application/json'
         }, 
         body: JSON.stringify(requestBody)
     });
 
-    
-    console.log(response.output_text);
-
     const data = await response.json();
     const summary = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Failed to get summary.";
     
-    chrome.runtime.sendMessage({ summary });
+    return summary
 }
 
-chrome.runtime.onMessage.addListener((request) => {
-    if (request.summary) {
-        const summaryText = request.summary;
-        document.getElementById('summary').innerText = summaryText;
+function showSummary(summaryText) {
+    document.getElementById('summary').innerText = summaryText;
 
-        if (summaryText.includes('High')){
-            document.getElementById('risk').innerHTML = `<span class = 'risk high>High Risk</span>`;
-        } else if (summaryText.includes('Moderate')) {
-            document.getElementById('risk').innerHTML = `<span class = 'risk moderate>Moderate Risk</span>`;
-        } else {
-            document.getElementById('risk').innerHTML = `<span class = 'risk low>Low Risk</span>`;
-        }
+    let riskClass = 'low';
+    if (summaryText.includes('High')) riskClass = 'high';
+    else if (summaryText.includes('Moderate')) riskClass = 'moderate';
 
-    }
-})
+    document.getElementById('risk').innerHTML = '';
+}
