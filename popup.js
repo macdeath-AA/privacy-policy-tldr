@@ -6,10 +6,20 @@ document.getElementById("summarize").addEventListener("click", async () => {
         });
     });
 });
+let apiKey = null;
+
+async function loadAPIKey() {
+    if (apiKey) return apiKey;
+
+    const res = await fetch(chrome.runtime.getURL('secrets.json'));
+    const data = await res.json();
+    apiKey = data.GEMINI_API_KEY;
+    return apiKey
+}
 
 async function extractTextandSummarize() {
     const bodyText = document.body.innerText;
-    const apiKey = 'AIzaSyAc7JVp6SKsecbxm7pltUm1bMmANJ5pTlY'
+    const apiKey = await loadAPIKey();
     
     const prompt = `Summarize the following privacy policy in 3-5 bullet points. Highlight data collection, sharing, and storage. Rate risk as Low, Moderate, or High.\n\n${bodyText}`;
 
