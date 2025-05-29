@@ -94,3 +94,15 @@ button:hover {
   margin-right: 8px;
   font-size: 18px;
 }
+
+.popup-icon {
+  width: 50px;    /* or any size you want */
+  height: 50px;
+  object-fit: contain;  /* keeps aspect ratio */
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* spacing between icon and text */
+}
