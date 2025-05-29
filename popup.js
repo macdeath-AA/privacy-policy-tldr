@@ -28,6 +28,7 @@ async function extractTextandSummarize(bodyText) {
     Data Collection: [list items, comma-separated]
     Data Sharing: [brief summary of sharing destinations, comma-separated if needed]
     Data Storage: [briefly describe how/where data is stored, or if not mentioned]
+    Compliances: [List any mentioned (e.g., GDPR, CCPA, HIPAA) or say 'Not mentioned']
     
     Do not add extra text or explanations.`;
 
@@ -59,11 +60,13 @@ async function extractTextandSummarize(bodyText) {
 
 function showSummary(summaryText) {
     
-    const riskMatch = summaryText.match(/Risk Level:\s*(Low|Moderate|High)/i);
+    const riskMatch = summaryText.match(/Risk Level:\s*(low|moderate|high)/i);
 
     let riskClass = 'low';
     let riskText = '';
-    
+    const riskIcon = '&#x26A0';
+
+
     if (riskMatch) {
         const level = riskMatch[1];
         riskClass = level.toLowerCase();
@@ -72,11 +75,13 @@ function showSummary(summaryText) {
     }
 
     const formatted = summaryText
-    .replace(/Data Collection:/i, '<strong>Data Collection:</strong>')
-    .replace(/Data Sharing:/i, '<strong>Data Sharing:</strong>')
-    .replace(/Data Storage:/i, '<strong>Data Storage:</strong>');
+    .replace(/Data Collection:/i,   '<div class = "section-card"><strong>Data Collection:</strong>')
+    .replace(/Data Sharing:/i, '</div><div class = "section-card"><strong>Data Sharing:</strong>')
+    .replace(/Data Storage:/i, '</div><div class = "section-card"><strong>Data Storage:</strong>')
+    .replace(/Compliances:/i, '</div><div class = "section-card"><strong>Compliances:</strong>')
+    + '</div>';
 
     document.getElementById('summary').innerHTML = formatted;
-    document.getElementById('risk').innerHTML = `<span class='risk ${riskClass}'>${riskText}</span>`;
+    document.getElementById('risk').innerHTML = `<div class = 'risk-box risk ${riskClass}'><span class='risk-icon'>${riskIcon} ${riskText}</span></div>`;
 
 }
