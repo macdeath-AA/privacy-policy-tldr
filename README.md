@@ -2,7 +2,7 @@
 Privacy Policy TL;DR is a Chrome extension that summarizes website privacy policies into a short, readable format. It highlights the risk level, data collection, sharing, storage, and compliance info using Gemini's free API.
 
 ## Preview
-<img src="Screenshot.png" alt="Privacy TL;DR Screenshot" width="500"/>
+<img src="screenshot.png" alt="Privacy TL;DR Screenshot" width="500"/>
 
 ## Features
 - **Risk Level Classification:** High, Moderate, Low
